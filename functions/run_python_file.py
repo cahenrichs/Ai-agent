@@ -18,7 +18,18 @@ def run_python_file(working_directory, file_path, args=[]):
             capture_output=True,
             text=True
             )
-        print("stdout:", result.stdout)
-        print("stderr:", result.stderr)
+
+        lines = []
+        if result.stdout:
+            lines.append(f"STDOUT: {result.stdout.strip()}")
+        if result.stderr:
+            lines.append(f"STDERR: {result.stderr.strip()}")
+        if result.returncode != 0:
+            lines.append(f"Process exited with code {result.returncode}")
+
+        if not lines:
+            return "No output produced."
+        return "\n".join(lines)
+
     except Exception as e:
         return f"Error: executing Python file: {e}"
