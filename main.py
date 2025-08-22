@@ -4,6 +4,7 @@ from google import genai
 import sys
 from google.genai import types
 from prompts import system_prompt
+from functions.get_files_info import available_functions
 
 if len(sys.argv) < 2:
     print("error")
@@ -22,8 +23,14 @@ client = genai.Client(api_key=api_key)
 response = client.models.generate_content(
 model='gemini-2.0-flash-001', 
 contents= messages,
-config=types.GenerateContentConfig(system_instruction=system_prompt),
+config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt),
 )
+if response.function_calls:
+    for function_call_part in response.function_calls:
+        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+else:
+    print(response.text)
+
 
 
 if "--verbose" in sys.argv:
@@ -32,7 +39,5 @@ if "--verbose" in sys.argv:
     print(f"User prompt: {user_prompt}")
     print(f"Prompt tokens: {Prompt_tokens}")
     print(f"Response tokens: {Response_tokens}")
-else:
-    print(response.candidates[0].content.parts[0].text)
 
 
