@@ -1,4 +1,6 @@
 import os
+from google.genai import types
+from prompts import system_prompt
 
 def get_file_content(working_directory, file_path):
     try:
@@ -19,3 +21,26 @@ def get_file_content(working_directory, file_path):
         return f"Error: '{e}'"
 
 
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Read the contents of a file in the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path to the file to read, relative to the working directory.",
+            ),
+        },
+        required=["file_path"],
+    ),
+)
+available_functions = types.Tool(
+    function_declarations=[
+        schema_get_file_content,
+    ]
+)
+
+config=types.GenerateContentConfig(
+    tools=[available_functions], system_instruction=system_prompt
+)

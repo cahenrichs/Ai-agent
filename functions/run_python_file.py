@@ -1,4 +1,6 @@
 import os
+from google.genai import types
+from prompts import system_prompt
 
 def run_python_file(working_directory, file_path, args=[]):
     try:
@@ -33,3 +35,33 @@ def run_python_file(working_directory, file_path, args=[]):
 
     except Exception as e:
         return f"Error: executing Python file: {e}"
+    
+
+schema_run_python_file = types.FunctionDeclaration(
+    name="run_python_file",
+    description="Execute a Python file in the working directory with optional args.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+                    "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path to the Python file to run, relative to the working directory.",
+            ),
+            "args": types.Schema(
+                type=types.Type.ARRAY,
+                description="Optional command-line arguments to pass to the script.",
+                items=types.Schema(type=types.Type.STRING),
+       ),
+        },
+        required=["file_path"],
+    ),
+)
+available_functions = types.Tool(
+    function_declarations=[
+        schema_run_python_file,
+    ]
+)
+
+config=types.GenerateContentConfig(
+    tools=[available_functions], system_instruction=system_prompt
+)
